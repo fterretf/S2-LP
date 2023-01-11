@@ -78,7 +78,7 @@ S2LP::S2LP(SPIClass *spi, int csn, int sdn, int irqn, uint32_t frequency, uint32
   s_cWMbusSubmode = WMBUS_SUBMODE_NOT_CONFIGURED;
   current_event_callback = NULL;
   nr_of_irq_disabled = 0;
-  xTxDoneFlag = RESET;
+  xTxDoneFlag = S_RESET;
   memset((void *)vectcRxBuff, 0, FIFO_SIZE*sizeof(uint8_t));
   memset((void *)vectcTxBuff, 0, FIFO_SIZE*sizeof(uint8_t));
   cRxData = 0;
@@ -270,7 +270,7 @@ void S2LP::end(void)
   s_cWMbusSubmode = WMBUS_SUBMODE_NOT_CONFIGURED;
   current_event_callback = NULL;
   nr_of_irq_disabled = 0;
-  xTxDoneFlag = RESET;
+  xTxDoneFlag = S_RESET;
   memset((void *)vectcRxBuff, 0, FIFO_SIZE*sizeof(uint8_t));
   memset((void *)vectcTxBuff, 0, FIFO_SIZE*sizeof(uint8_t));
   cRxData = 0;
@@ -383,7 +383,7 @@ uint8_t S2LP::send(uint8_t *payload, uint8_t payload_len, uint8_t dest_addr, boo
     return 1;
   }
 
-  xTxDoneFlag = RESET;
+  xTxDoneFlag = S_RESET;
   enableS2LPIrq();
 
   return 0;
@@ -537,7 +537,7 @@ void S2LP::S2LPIrqHandler(void)
   if(xIrqStatus.IRQ_TX_DATA_SENT)
   {
     /* set the tx_done_flag to manage the event in the send() */
-    xTxDoneFlag = SET;
+    xTxDoneFlag = S_SET;
   }
 
   /* Check the S2LP RX_DATA_READY IRQ flag */

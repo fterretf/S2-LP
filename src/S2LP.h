@@ -370,7 +370,7 @@ class S2LP
     S2LPEventHandler current_event_callback;
     S2LPEventHandler irq_handler;
     int nr_of_irq_disabled;
-    volatile FlagStatus xTxDoneFlag;
+    volatile SFlagStatus xTxDoneFlag;
     uint8_t vectcRxBuff[FIFO_SIZE];
     uint8_t vectcTxBuff[FIFO_SIZE];
     uint8_t cRxData;
