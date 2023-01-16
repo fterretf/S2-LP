@@ -95,8 +95,11 @@ void S2LP::S2LPPktBasicInit(PktBasicInit* pxPktBasicInit)
   S2LPPktWMbusSetSubmode(WMBUS_SUBMODE_NOT_CONFIGURED);
 
   /* Always set the automatic packet filtering */
-  S2LPSpiReadRegisters(PROTOCOL1_ADDR, 1, &tmpBuffer[0]);
-  tmpBuffer[0] |= AUTO_PCKT_FLT_REGMASK;
+  //ARI: S2LPSpiReadRegisters(PROTOCOL1_ADDR, 1, &tmpBuffer[0]);
+  //ARI: tmpBuffer[0] |= AUTO_PCKT_FLT_REGMASK;
+  //ARI: S2LPSpiWriteRegisters(PROTOCOL1_ADDR, 1, &tmpBuffer[0]);
+  //ARI: 
+  tmpBuffer[0] = 0;
   S2LPSpiWriteRegisters(PROTOCOL1_ADDR, 1, &tmpBuffer[0]);
 
   tmpBuffer[0] = ((pxPktBasicInit->xSyncLength)<<2) | (uint8_t)((pxPktBasicInit->xPreambleLength)>>8);

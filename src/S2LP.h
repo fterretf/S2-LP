@@ -102,8 +102,8 @@ typedef struct PAInfo_s {
 class S2LP
 {
   public:
-    S2LP(SPIClass *spi, int csn, int sdn, int irqn, uint32_t frequency=868000000, uint32_t xtalFrequency=50000000, PAInfo_t paInfo={.paRfRangeExtender=RANGE_EXT_NONE, .paSignalCSD_S2LP={S2LP_GPIO_0, S2LP_GPIO_MODE_DIGITAL_OUTPUT_LP, S2LP_GPIO_DIG_OUT_TX_RX_MODE}, .paSignalCPS_S2LP={S2LP_GPIO_1, S2LP_GPIO_MODE_DIGITAL_OUTPUT_LP, S2LP_GPIO_DIG_OUT_RX_STATE}, .paSignalCTX_S2LP={S2LP_GPIO_2, S2LP_GPIO_MODE_DIGITAL_OUTPUT_LP, S2LP_GPIO_DIG_OUT_TX_STATE}, .paSignalCSD_MCU=A0, .paSignalCPS_MCU=A2, .paSignalCTX_MCU=A3, .paLevelValue=0x25}, S2LPGpioPin irq_gpio=S2LP_GPIO_3, uint8_t my_addr=0x44, uint8_t multicast_addr=0xEE, uint8_t broadcast_addr=0xFF);
-    void begin(void);
+	S2LP();
+	  void beginAri(uint32_t lFrequencyBase, uint32_t ldataRate, uint32_t lfreqDeviation, uint32_t lBandwidth, uint8_t lPreambleLenBit, uint8_t lPreambleType, uint8_t lSyncLenBit, uint32_t lSyncWord, int lRssiThreshdBm );
     void end(void);
     void attachS2LPReceive(S2LPEventHandler func);
     uint8_t send(uint8_t *payload, uint8_t payload_len, uint8_t dest_addr, bool use_csma_ca = true);
@@ -114,7 +114,7 @@ class S2LP
     void setRadioChannelSpace(uint32_t lChannelSpace);
     uint32_t getRadioChannelSpace(void);
 
-  protected:
+  public:
     uint8_t S2LPSetReadyState(void);
     S2LPCutType S2LPManagementGetCut(void);
     /** S2-LP Irq Callback */
@@ -354,28 +354,29 @@ class S2LP
     void S2LPTimerGetWakeUpTimerReload(float* pfWakeUpReloadMsec, uint8_t* pcCounter, uint8_t* pcPrescaler, uint8_t* pcMulti);
     void S2LPTimerComputeWakeUpValues(float fDesiredMsec , uint8_t* pcCounter , uint8_t* pcPrescaler);
 
-    SPIClass *dev_spi;
-    int csn_pin;
-    int sdn_pin;
-    int irq_pin;
-    uint32_t lFrequencyBase;
-    uint32_t s_lXtalFrequency;
-    PAInfo_t s_paInfo;
-    S2LPGpioPin irq_gpio_selected;
-    uint8_t my_address;
-    uint8_t multicast_address;
-    uint8_t broadcast_address;
-    S2LPStatus g_xStatus;
-    WMbusSubmode s_cWMbusSubmode;
-    S2LPEventHandler current_event_callback;
-    S2LPEventHandler irq_handler;
-    int nr_of_irq_disabled;
+     SPIClass *dev_spi;
+	 int csn_pin;
+     int sdn_pin;
+     int irq_pin;
+     uint32_t lFrequencyBase;
+     uint32_t s_lXtalFrequency;
+     PAInfo_t s_paInfo;
+     S2LPGpioPin irq_gpio_selected;
+     uint8_t my_address;
+     uint8_t multicast_address;
+     uint8_t broadcast_address;
+     S2LPStatus g_xStatus;
+     WMbusSubmode s_cWMbusSubmode;
+     S2LPEventHandler current_event_callback;
+     S2LPEventHandler irq_handler;
+     int nr_of_irq_disabled;
     volatile SFlagStatus xTxDoneFlag;
-    uint8_t vectcRxBuff[FIFO_SIZE];
-    uint8_t vectcTxBuff[FIFO_SIZE];
-    uint8_t cRxData;
-    volatile bool is_waiting_for_read;
-    bool is_bypass_enabled;
+     uint8_t vectcRxBuff[FIFO_SIZE];
+     uint8_t vectcTxBuff[FIFO_SIZE];
+     uint8_t cRxData;
+     volatile bool is_waiting_for_read;
+	 uint8_t lastestRssi;
+     bool is_bypass_enabled;
 };
 
 #endif /* __S2LP_H__ */

@@ -37,6 +37,7 @@
 
 
 /* Includes ------------------------------------------------------------------*/
+#include "arduino.h"
 
 #include "S2LP.h"
 
@@ -69,8 +70,11 @@
  * @param my_addr address of the device
  * @param multicast_addr multicast address
  * @param broadcast_addr broadcast address
- */
-S2LP::S2LP(SPIClass *spi, int csn, int sdn, int irqn, uint32_t frequency, uint32_t xtalFrequency, PAInfo_t paInfo, S2LPGpioPin irq_gpio, uint8_t my_addr, uint8_t multicast_addr, uint8_t broadcast_addr) : dev_spi(spi), csn_pin(csn), sdn_pin(sdn), irq_pin(irqn), lFrequencyBase(frequency), s_lXtalFrequency(xtalFrequency), s_paInfo(paInfo), irq_gpio_selected(irq_gpio), my_address(my_addr), multicast_address(multicast_addr), broadcast_address(broadcast_addr)
+ *
+S2LP::S2LP(SPIClass *spi, int csn, int sdn, int irqn, uint32_t frequency, uint32_t xtalFrequency, PAInfo_t paInfo, S2LPGpioPin irq_gpio, uint8_t my_addr, uint8_t multicast_addr, uint8_t broadcast_addr)
+ : dev_spi(spi), csn_pin(csn), sdn_pin(sdn), irq_pin(irqn), 
+ lFrequencyBase(frequency), s_lXtalFrequency(xtalFrequency), 
+ s_paInfo(paInfo), irq_gpio_selected(irq_gpio), my_address(my_addr), multicast_address(multicast_addr), broadcast_address(broadcast_addr)
 {
   Callback<void()>::func = std::bind(&S2LP::S2LPIrqHandler, this);
   irq_handler = static_cast<S2LPEventHandler>(Callback<void()>::callback);
@@ -85,45 +89,75 @@ S2LP::S2LP(SPIClass *spi, int csn, int sdn, int irqn, uint32_t frequency, uint32
   is_waiting_for_read = false;
   is_bypass_enabled = false;
 }
-
-/**
-* @brief  Initialize the S2-LP library.
-* @param  None.
-* @retval None.
 */
-void S2LP::begin(void)
+S2LP::S2LP()
 {
-  pinMode(csn_pin, OUTPUT);
-  digitalWrite(csn_pin, HIGH);
 
-  pinMode(sdn_pin, OUTPUT);
-
-  /* Shutdown the S2-LP */
-  digitalWrite(sdn_pin, HIGH);
-  delay(1);
-  digitalWrite(sdn_pin, LOW);
-  delay(1);
+  dev_spi = &SPI;
+  csn_pin= 6;
+  sdn_pin = -1;
+  irq_pin = 3;
+  lFrequencyBase = 433920000; 
+  s_lXtalFrequency = 50000000;
+  
+  s_paInfo.paRfRangeExtender=RANGE_EXT_NONE;
+  s_paInfo.paSignalCSD_S2LP={S2LP_GPIO_0, S2LP_GPIO_MODE_DIGITAL_OUTPUT_LP, S2LP_GPIO_DIG_OUT_TX_RX_MODE}; 
+  s_paInfo.paSignalCPS_S2LP={S2LP_GPIO_1, S2LP_GPIO_MODE_DIGITAL_OUTPUT_LP, S2LP_GPIO_DIG_OUT_RX_STATE}; 
+  s_paInfo.paSignalCTX_S2LP={S2LP_GPIO_2, S2LP_GPIO_MODE_DIGITAL_OUTPUT_LP, S2LP_GPIO_DIG_OUT_TX_STATE};
+  s_paInfo.paSignalCSD_MCU=A0;
+  s_paInfo.paSignalCPS_MCU=A2;
+  s_paInfo.paSignalCTX_MCU=A3;
+  s_paInfo.paLevelValue=0x25;
+  
+  irq_gpio_selected = S2LP_GPIO_3;
+  my_address = 0x44;
+  multicast_address = 0xEE;
+  broadcast_address = 0xFF;
+  
+  Callback<void()>::func = NULL; //std::bind(&S2LP::S2LPIrqHandler, this);
+  irq_handler = NULL; //static_cast<S2LPEventHandler>(Callback<void()>::callback);
+  memset((void *)&g_xStatus, 0, sizeof(S2LPStatus));
+  s_cWMbusSubmode = WMBUS_SUBMODE_NOT_CONFIGURED;
+  current_event_callback = NULL;
+  nr_of_irq_disabled = 0;
+  xTxDoneFlag = S_RESET;
+  memset((void *)vectcRxBuff, 0, FIFO_SIZE*sizeof(uint8_t));
+  memset((void *)vectcTxBuff, 0, FIFO_SIZE*sizeof(uint8_t));
+  cRxData = 0;
+  is_waiting_for_read = false;
+  is_bypass_enabled = false;
+  
+  
+  
+}
+//void S2LP::setSPI( SPIClass* spiNew, int cs ){
+//	dev_spi = (SPIClass*)spiNew;
+//	csn_pin = cs;
+//}
+void S2LP::beginAri(uint32_t lFrequencyBase, uint32_t ldataRate, uint32_t lfreqDeviation, uint32_t lBandwidth, uint8_t lPreambleLenBit, uint8_t lPreambleType, uint8_t lSyncLenBit, uint32_t lSyncWord, int lRssiThreshdBm )
+{
+	uint8_t tmp = 0x00;
+	//Reset uses PCA, so it is handled outside of this lib
+	// GPIO are also set outside.
 
   /* S2-LP soft reset */
   S2LPCmdStrobeSres();
-
-  SGpioInit xGpioIRQ={
-    irq_gpio_selected,
-    S2LP_GPIO_MODE_DIGITAL_OUTPUT_LP,
-    S2LP_GPIO_DIG_OUT_IRQ  
-  };
-
-  S2LPGpioInit(&xGpioIRQ);
+  
+  delay(10);
 
   SRadioInit xRadioInit = {
     lFrequencyBase, /* base carrier frequency */
     MOD_2FSK,       /* modulation type */
-    38400,          /* data rate */
-    20000,          /* frequency deviation */
-    100000          /* bandwidth */
+    ldataRate,      /* data rate */
+    lfreqDeviation, /* frequency deviation */
+    lBandwidth      /* bandwidth */
   };
 
   S2LPRadioInit(&xRadioInit);
+  SerialUSB.print("Setting lFrequencyBase ");SerialUSB.println(lFrequencyBase);
+  SerialUSB.print("Setting ldataRate ");SerialUSB.println(ldataRate);
+  SerialUSB.print("Setting lfreqDeviation ");SerialUSB.println(lfreqDeviation);
+  SerialUSB.print("Setting lBandwidth ");SerialUSB.println(lBandwidth);
 
   S2LPRadioSetMaxPALevel(S_DISABLE);
 
@@ -154,59 +188,65 @@ void S2LP::begin(void)
   S2LPRadioSetPALevelMaxIndex(7);
 
   PktBasicInit xBasicInit={
-    16,                 /* Preamble length */
-    32,                 /* Sync length */
-    0x88888888,         /* Sync word */
-    S_ENABLE,           /* Variable length */
+    lPreambleLenBit,    /* Preamble length */
+    lSyncLenBit,        /* Sync length */
+    lSyncWord,          /* Sync word */
+    S_DISABLE,          /* Variable length */
     S_DISABLE,          /* Extended length field */
-    PKT_CRC_MODE_8BITS, /* CRC mode */
-    S_ENABLE,           /* Enable address */
+    PKT_NO_CRC,         /* CRC mode */
+    S_DISABLE,          /* Enable address */
     S_DISABLE,          /* Enable FEC */
-    S_ENABLE            /* Enable Whitening */
+    S_DISABLE           /* Enable Whitening */
   };
 
   S2LPPktBasicInit(&xBasicInit);
+  Serial.print("Setting lPreambleLenBit ");Serial.println(lPreambleLenBit);
+  Serial.print("Setting lSyncLenBit ");Serial.println(lSyncLenBit);
+  Serial.print("Setting lSyncWord ");Serial.println(lSyncWord,HEX);
+
+
 
   PktBasicAddressesInit xAddressInit={
-    S_ENABLE,          /* Filtering my address */
-    my_address,        /* My address */
-    S_ENABLE,          /* Filtering multicast address */
-    multicast_address, /* Multicast address */
-    S_ENABLE,          /* Filtering broadcast address */
-    broadcast_address  /* broadcast address */
+    S_DISABLE,          /* Filtering my address */
+    0x00,        /* My address */
+    S_DISABLE,          /* Filtering multicast address */
+    0x00, /* Multicast address */
+    S_DISABLE,          /* Filtering broadcast address */
+    0x00  /* broadcast address */
   };
 
   S2LPPktBasicAddressesInit(&xAddressInit);
 
-  SCsmaInit xCsmaInit={
-    S_ENABLE,           /* Persistent mode enable/disable */
-    CSMA_PERIOD_64TBIT, /* CS Period */
-    3,                  /* CS Timeout */
-    5,                  /* Max number of backoffs */
-    0xFA21,             /* BU counter seed */
-    32                  /* CU prescaler */
-  };
-
-  S2LPCsmaInit(&xCsmaInit);
-  S2LPPacketHandlerSetRxPersistentMode(S_ENABLE);
+  //S2LPPacketHandlerSetRxPersistentMode(S_DISABLE);
 
   SRssiInit xSRssiInit = {
     .cRssiFlt = 14,
-    .xRssiMode = RSSI_STATIC_MODE,
-    .cRssiThreshdBm = -60,
+    .xRssiMode = RSSI_DYNAMIC_6DB_STEP_MODE, //RSSI_STATIC_MODE,  //RSSI_DYNAMIC_6DB_STEP_MODE
+    .cRssiThreshdBm = lRssiThreshdBm,
   };
   S2LPRadioRssiInit(&xSRssiInit);
+  Serial.print("Setting Rssi Threshold dBm ");Serial.println(lRssiThreshdBm);
 
   S2LPManagementRcoCalibration();
 
+  /* disable CSMA and its filtering*/
+  tmp = 0x00;
+  S2LPSpiWriteRegisters(0x3A, 1, &tmp);
+  
   /* Enable PQI */
-  S2LPRadioSetPqiCheck(0x00);
-  S2LPRadioSetPqiCheck(S_ENABLE);
+  //S2LPRadioSetPqiCheck(0x00);
+  S2LPRadioSetPqiCheck(S_DISABLE); //S_ENABLE);
 
   /* S2LP IRQs enable */
-  S2LPGpioIrqDeInit(NULL);
-  S2LPGpioIrqConfig(RX_DATA_READY,S_ENABLE);
-  S2LPGpioIrqConfig(TX_DATA_SENT , S_ENABLE);
+  //S2LPGpioIrqDeInit(NULL);
+  //S2LPGpioIrqConfig(RX_DATA_READY,S_DISABLE);
+  //S2LPGpioIrqConfig(TX_DATA_SENT , S_DISABLE);
+  
+  //RX_TIMEOUT_AND_OR_SELECT CS_TIMEOUT_MASK SQI_TIMEOUT_MASK PQI_TIMEOUT_MASK 
+  //1  (0x40=4)                       0              0                0
+  //The RX timeout cannot be stopped. It starts at the RX state and at the end expires
+  tmp = 0x04;
+  S2LPSpiWriteRegisters(0x39, 1, &tmp);  
 
   /* clear FIFO if needed */
   S2LPCmdStrobeFlushRxFifo();
@@ -218,19 +258,28 @@ void S2LP::begin(void)
   /* IRQ registers blanking */
   S2LPGpioIrqClearStatus();
 
-  uint8_t tmp = 0x90;
+  tmp = 0x90;
   S2LPSpiWriteRegisters(0x76, 1, &tmp);
 
-  if(s_paInfo.paRfRangeExtender == RANGE_EXT_SKYWORKS_SKY66420)
-  {
-    FEM_Operation_SKY66420(FEM_RX);
+
+  // Force preamble type :
+  if( lPreambleType < 4 ){
+	  //PCKTCTRL3 2E 2 low bits
+	  S2LPSpiReadRegisters(0x2E, 1, &tmp );
+	  tmp = (tmp&0xFC) | (lPreambleType&0x03);
+	  S2LPSpiWriteRegisters(0x2E, 1, &tmp );
+	  Serial.print("Setting preamble ");Serial.println(tmp);
   }
 
   /* Go to RX state */
-  S2LPCmdStrobeCommand(CMD_RX);
+  //S2LPCmdStrobeCommand(CMD_RX);
+  Serial.println("Configuration done at begin time");
 
-  attachInterrupt(irq_pin, irq_handler, FALLING);
+  //attachInterrupt(irq_pin, irq_handler, FALLING);
 }
+
+
+
 
 /**
 * @brief  DeInitialize the S2-LP library.
@@ -528,6 +577,7 @@ S2LPCutType S2LP::S2LPManagementGetCut(void)
 */
 void S2LP::S2LPIrqHandler(void)
 {
+	bool res = false;
   S2LPIrqs xIrqStatus;
 
   /* Get the IRQ status */
@@ -536,6 +586,7 @@ void S2LP::S2LPIrqHandler(void)
   /* Check the SPIRIT TX_DATA_SENT IRQ flag */
   if(xIrqStatus.IRQ_TX_DATA_SENT)
   {
+	  Serial.println("Found Data Tx IRQ");
     /* set the tx_done_flag to manage the event in the send() */
     xTxDoneFlag = S_SET;
   }
@@ -543,9 +594,13 @@ void S2LP::S2LPIrqHandler(void)
   /* Check the S2LP RX_DATA_READY IRQ flag */
   if(xIrqStatus.IRQ_RX_DATA_READY)
   {
+	S2LPSpiReadRegisters(0xA2, 1, &lastestRssi ); // RSSI_LEVEL
+	  
     /* Get the RX FIFO size */
     cRxData = S2LPFifoReadNumberBytesRxFifo();
 
+	//Serial.print("Found Data Rx IRQ : bytes ");
+    //Serial.println(cRxData);
     /* Read the RX FIFO */
     S2LPSpiReadFifo(cRxData, vectcRxBuff);
 
@@ -583,14 +638,16 @@ void S2LP::disableS2LPIrq(void)
 */
 void S2LP::enableS2LPIrq(void)
 {
-  if(nr_of_irq_disabled > 0)
-  {
-    nr_of_irq_disabled--;
-    if(nr_of_irq_disabled == 0)
-    {
-      attachInterrupt(irq_pin, irq_handler, FALLING);
-    }
-  }
+  //ARI: no interrupt allowed !
+  return;
+//  if(nr_of_irq_disabled > 0)
+//  {
+//    nr_of_irq_disabled--;
+//    if(nr_of_irq_disabled == 0)
+//    {
+//      attachInterrupt(irq_pin, irq_handler, FALLING);
+//    }
+//  }
 }
 
 /**
@@ -773,10 +830,13 @@ S2LPStatus S2LP::S2LPSpiReadFifo(uint8_t cNbBytes, uint8_t* pcBuffer)
 void S2LP::SpiSendRecv(uint8_t *pcHeader, uint8_t *pcBuffer, uint16_t cNbBytes)
 {
   disableS2LPIrq();
+  //ARI :Reduced speed because bus is heavily loaded
+  dev_spi->beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE0));
 
-  dev_spi->beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
+  //digitalWrite(csn_pin, LOW);
+  // There is a multilexer on ARI v2
 
-  digitalWrite(csn_pin, LOW);
+  digitalWrite(7, 1);digitalWrite(6, 0);
 
   dev_spi->transfer(pcHeader, S2LP_CMD_SIZE);
 
@@ -785,7 +845,12 @@ void S2LP::SpiSendRecv(uint8_t *pcHeader, uint8_t *pcBuffer, uint16_t cNbBytes)
     dev_spi->transfer(pcBuffer, cNbBytes);
   }
 
-  digitalWrite(csn_pin, HIGH);
+  //digitalWrite(csn_pin, HIGH);
+  // There is a multilexer on ARI v2
+  //digitalWrite(6, 1);digitalWrite(7, 1); 
+   const uint32_t MUX_IOPIN_MASK = 0x00300000; // 1<<6 | 1 << 7;
+  // change both CS at the same time
+  PORT->Group[0].OUTSET.reg = MUX_IOPIN_MASK;     // Switch the output to 0 or LOW
 
   enableS2LPIrq();
 }
@@ -798,7 +863,9 @@ void S2LP::SpiSendRecv(uint8_t *pcHeader, uint8_t *pcBuffer, uint16_t cNbBytes)
 void S2LP::S2LPManagementRcoCalibration(void)
 {
   uint8_t tmp[2],tmp2;
-
+  SerialUSB.print("S2LP Starting VCO Calibration...");
+  uint32_t start = millis();
+  
   S2LPSpiReadRegisters(0x6D, 1, &tmp2);
   tmp2 |= 0x01;
   S2LPSpiWriteRegisters(0x6D, 1, &tmp2);
@@ -811,7 +878,10 @@ void S2LP::S2LPManagementRcoCalibration(void)
   {
     S2LPSpiReadRegisters(0x8D, 1, tmp);
   }
-  while((tmp[0]&0x10)==0);
+  while((tmp[0]&0x10)==0   &&  ( millis()-start < 10000));
+  if( (tmp[0]&0x10)==0 ){
+	  SerialUSB.println("Failed to calibrate RCO !");
+  }
 
   S2LPSpiReadRegisters(0x94, 2, tmp);
   S2LPSpiReadRegisters(0x6F, 1, &tmp2);
@@ -822,4 +892,5 @@ void S2LP::S2LPManagementRcoCalibration(void)
   tmp2 &= 0xFE;
 
   S2LPSpiWriteRegisters(0x6D, 1, &tmp2);
+  SerialUSB.print("S2LP VCO Calibration Done");
 }

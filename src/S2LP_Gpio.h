@@ -103,43 +103,43 @@ typedef enum {
  * @brief  S2LP I/O selection enumeration.
  */
 typedef enum {
-  S2LP_GPIO_DIG_OUT_IRQ                               = 0x00, /*!< nIRQ (Interrupt Request, active low) , default configuration after POR */
-  S2LP_GPIO_DIG_OUT_POR_INV                           = 0x08, /*!< POR inverted (active low) */
-  S2LP_GPIO_DIG_OUT_WUT_EXP                           = 0x10, /*!< Wake-Up Timer expiration: "1" when WUT has expired */
-  S2LP_GPIO_DIG_OUT_LBD                               = 0x18, /*!< Low battery detection: "1" when battery is below threshold setting */
-  S2LP_GPIO_DIG_OUT_TX_DATA                           = 0x20, /*!< TX data internal clock output (TX data are sampled on the rising edge of it) */
-  S2LP_GPIO_DIG_OUT_TX_STATE                          = 0x28, /*!< TX state indication: "1" when S2LP1 is passing in the TX state */
-  S2LP_GPIO_DIG_OUT_TXRX_FIFO_ALMOST_EMPTY            = 0x30, /*!< TX/RX FIFO Almost Empty Flag */
-  S2LP_GPIO_DIG_OUT_TXRX_FIFO_ALMOST_FULL             = 0x38, /*!< TX/RX FIFO Almost Full Flag */
-  S2LP_GPIO_DIG_OUT_RX_DATA                           = 0x40, /*!< RX data output */
-  S2LP_GPIO_DIG_OUT_RX_CLOCK                          = 0x48, /*!< RX clock output (recovered from received data) */
-  S2LP_GPIO_DIG_OUT_RX_STATE                          = 0x50, /*!< RX state indication: "1" when demodulator is ON */
-  S2LP_GPIO_DIG_OUT_NOT_STANDBY_SLEEP                 = 0x58, /*!< VDD when the device is not in SLEEP or STANDBY */
-  S2LP_GPIO_DIG_OUT_STANDBY                           = 0x60, /*!< VDD when device is in STANDBY */
-  S2LP_GPIO_DIG_OUT_ANTENNA_SWITCH                    = 0x68, /*!< Antenna switch used for antenna diversity  */
-  S2LP_GPIO_DIG_OUT_VALID_PREAMBLE                    = 0x70, /*!< Valid Preamble Detected Flag */
-  S2LP_GPIO_DIG_OUT_SYNC_DETECTED                     = 0x78, /*!< Sync WordSync Word Detected Flag */
-  S2LP_GPIO_DIG_OUT_RSSI_THRESHOLD                    = 0x80, /*!< RSSI above threshold */
-  S2LP_GPIO_DIG_OUT_MCU_CLOCK                         = 0x88, /*!< MCU Clock */
-  S2LP_GPIO_DIG_OUT_TX_RX_MODE                        = 0x90, /*!< TX or RX mode indicator (to enable an external range extender) */
-  S2LP_GPIO_DIG_OUT_VDD                               = 0x98, /*!< VDD (to emulate an additional GPIO of the MCU, programmable by SPI) */
-  S2LP_GPIO_DIG_OUT_GND                               = 0xA0, /*!< GND (to emulate an additional GPIO of the MCU, programmable by SPI) */
-  S2LP_GPIO_DIG_OUT_SMPS_EXT                          = 0xA8, /*!< External SMPS enable signal (active high) */
-  S2LP_GPIO_DIG_OUT_SLEEP                             = 0xB0, /*!< Device in SLEEP (active high) */
-  S2LP_GPIO_DIG_OUT_READY                             = 0xB8, /*!< Device in READY (active high) */
-  S2LP_GPIO_DIG_OUT_LOCK                              = 0xC0, /*!< Device in LOCK (active high) */
-  S2LP_GPIO_DIG_OUT_WAIT_FOR_LOCK_SIG                 = 0xC8, /*!< Device waiting for LOCK (active high) */
-  S2LP_GPIO_DIG_OUT_TX_DATA_OOK_SIGNAL                = 0xD0,
-  S2LP_GPIO_DIG_OUT_WAIT_FOR_READY2_SIG               = 0xD8,
-  S2LP_GPIO_DIG_OUT_WAIT_FOR_TIMER_FOR_PM_SET         = 0xE0,
-  S2LP_GPIO_DIG_OUT_WAIT_VCO_CALIBRATION              = 0xE8,
-  S2LP_GPIO_DIG_OUT_ENABLE_SYNTH_FULL_CIRCUIT         = 0xF0,
+  S2LP_GPIO_DIG_OUT_IRQ                               = 0x00, /*!< 0 nIRQ (Interrupt Request, active low) , default configuration after POR */
+  S2LP_GPIO_DIG_OUT_POR_INV                           = 0x08, /*!< 1 POR inverted (active low) */
+  S2LP_GPIO_DIG_OUT_WUT_EXP                           = 0x10, /*!< 2 Wake-Up Timer expiration: "1" when WUT has expired */
+  S2LP_GPIO_DIG_OUT_LBD                               = 0x18, /*!< 3 Low battery detection: "1" when battery is below threshold setting */
+  S2LP_GPIO_DIG_OUT_TX_DATA                           = 0x20, /*!< 4 TX data internal clock output (TX data are sampled on the rising edge of it) */
+  S2LP_GPIO_DIG_OUT_TX_STATE                          = 0x28, /*!< 5 TX state indication: "1" when S2LP1 is passing in the TX state */
+  S2LP_GPIO_DIG_OUT_TXRX_FIFO_ALMOST_EMPTY            = 0x30, /*!< 6 TX/RX FIFO Almost Empty Flag */
+  S2LP_GPIO_DIG_OUT_TXRX_FIFO_ALMOST_FULL             = 0x38, /*!< 7 TX/RX FIFO Almost Full Flag */
+  S2LP_GPIO_DIG_OUT_RX_DATA                           = 0x40, /*!< 8 RX data output */
+  S2LP_GPIO_DIG_OUT_RX_CLOCK                          = 0x48, /*!< 9 RX clock output (recovered from received data) */
+  S2LP_GPIO_DIG_OUT_RX_STATE                          = 0x50, /*!< 10 RX state indication: "1" when demodulator is ON */
+  S2LP_GPIO_DIG_OUT_NOT_STANDBY_SLEEP                 = 0x58, /*!< 11 VDD when the device is not in SLEEP or STANDBY */
+  S2LP_GPIO_DIG_OUT_STANDBY                           = 0x60, /*!< 12 VDD when device is in STANDBY */
+  S2LP_GPIO_DIG_OUT_ANTENNA_SWITCH                    = 0x68, /*!< 13 Antenna switch used for antenna diversity  */
+  S2LP_GPIO_DIG_OUT_VALID_PREAMBLE                    = 0x70, /*!< 14 Va lid Preamble Detected Flag */
+  S2LP_GPIO_DIG_OUT_SYNC_DETECTED                     = 0x78, /*!< 15 Sync WordSync Word Detected Flag */
+  S2LP_GPIO_DIG_OUT_RSSI_THRESHOLD                    = 0x80, /*!< 16 RSSI above threshold */
+  S2LP_GPIO_DIG_OUT_MCU_CLOCK                         = 0x88, /*!< 17 MCU Clock */
+  S2LP_GPIO_DIG_OUT_TX_RX_MODE                        = 0x90, /*!< 18 TX or RX mode indicator (to enable an external range extender) */
+  S2LP_GPIO_DIG_OUT_VDD                               = 0x98, /*!< 19 VDD (to emulate an additional GPIO of the MCU, programmable by SPI) */
+  S2LP_GPIO_DIG_OUT_GND                               = 0xA0, /*!< 20 GND (to emulate an additional GPIO of the MCU, programmable by SPI) */
+  S2LP_GPIO_DIG_OUT_SMPS_EXT                          = 0xA8, /*!< 21 External SMPS enable signal (active high) */
+  S2LP_GPIO_DIG_OUT_SLEEP                             = 0xB0, /*!< 22 Device in SLEEP (active high) */
+  S2LP_GPIO_DIG_OUT_READY                             = 0xB8, /*!< 23 Device in READY (active high) */
+  S2LP_GPIO_DIG_OUT_LOCK                              = 0xC0, /*!< 24 Device in LOCK (active high) */
+  S2LP_GPIO_DIG_OUT_WAIT_FOR_LOCK_SIG                 = 0xC8, /*!< 25 Device waiting for LOCK (active high) */
+  S2LP_GPIO_DIG_OUT_TX_DATA_OOK_SIGNAL                = 0xD0, // 26
+  S2LP_GPIO_DIG_OUT_WAIT_FOR_READY2_SIG               = 0xD8, // 27
+  S2LP_GPIO_DIG_OUT_WAIT_FOR_TIMER_FOR_PM_SET         = 0xE0, // 28
+  S2LP_GPIO_DIG_OUT_WAIT_VCO_CALIBRATION              = 0xE8, // 29
+  S2LP_GPIO_DIG_OUT_ENABLE_SYNTH_FULL_CIRCUIT         = 0xF0, // 30
 
-  S2LP_GPIO_DIG_IN_TX_COMMAND                         = 0x00,
-  S2LP_GPIO_DIG_IN_RX_COMMAND                         = 0x08,
-  S2LP_GPIO_DIG_IN_TX_DATA_INPUT_FOR_DIRECTRF         = 0x10,
-  S2LP_GPIO_DIG_IN_DATA_WAKEUP                        = 0x18,
-  S2LP_GPIO_DIG_IN_EXT_CLOCK_AT_34_7KHZ               = 0x20
+  S2LP_GPIO_DIG_IN_TX_COMMAND                         = 0x00, // 31
+  S2LP_GPIO_DIG_IN_RX_COMMAND                         = 0x08, // 32
+  S2LP_GPIO_DIG_IN_TX_DATA_INPUT_FOR_DIRECTRF         = 0x10, // 33
+  S2LP_GPIO_DIG_IN_DATA_WAKEUP                        = 0x18, // 34
+  S2LP_GPIO_DIG_IN_EXT_CLOCK_AT_34_7KHZ               = 0x20  // 35
 } S2LPGpioIO;
 
 
