@@ -101,8 +101,14 @@ typedef struct PAInfo_s {
  */
 class S2LP
 {
+ public:
+  enum eS2lpId : int8_t {
+    eS2lp1 = 0,
+    eS2lp2,
+    eS2lpNb,
+  };   
   public:
-	S2LP();
+   	S2LP(eS2lpId s2lpId);
 	  void beginAri(uint32_t lFrequencyBase, uint32_t ldataRate, uint32_t lfreqDeviation, uint32_t lBandwidth, uint8_t lPreambleLenBit, uint8_t lPreambleType, uint8_t lSyncLenBit, uint32_t lSyncWord, int lRssiThreshdBm );
     void end(void);
     void attachS2LPReceive(S2LPEventHandler func);
@@ -355,7 +361,7 @@ class S2LP
     void S2LPTimerComputeWakeUpValues(float fDesiredMsec , uint8_t* pcCounter , uint8_t* pcPrescaler);
 
      SPIClass *dev_spi;
-	 int csn_pin;
+	   int csn_pin;
      int sdn_pin;
      int irq_pin;
      uint32_t lFrequencyBase;
@@ -370,13 +376,19 @@ class S2LP
      S2LPEventHandler current_event_callback;
      S2LPEventHandler irq_handler;
      int nr_of_irq_disabled;
-    volatile SFlagStatus xTxDoneFlag;
+     volatile SFlagStatus xTxDoneFlag;
      uint8_t vectcRxBuff[FIFO_SIZE];
      uint8_t vectcTxBuff[FIFO_SIZE];
      uint8_t cRxData;
      volatile bool is_waiting_for_read;
-	 uint8_t lastestRssi;
+	   uint8_t lastestRssi;
      bool is_bypass_enabled;
+
+   private:
+     void csSelect();
+     void csUnselect();  
+     eS2lpId _s2lpId;
+
 };
 
 #endif /* __S2LP_H__ */

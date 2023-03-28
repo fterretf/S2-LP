@@ -38,6 +38,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "arduino.h"
+#include "mux.h"
 
 #include "S2LP.h"
 
@@ -90,7 +91,9 @@ S2LP::S2LP(SPIClass *spi, int csn, int sdn, int irqn, uint32_t frequency, uint32
   is_bypass_enabled = false;
 }
 */
-S2LP::S2LP()
+S2LP::S2LP(eS2lpId s2lpId):
+  _s2lpId(s2lpId)
+
 {
 
   dev_spi = &SPI;
@@ -820,6 +823,34 @@ S2LPStatus S2LP::S2LPSpiReadFifo(uint8_t cNbBytes, uint8_t* pcBuffer)
   return status;
 }
 
+void S2LP::csSelect() {
+  switch (_s2lpId) {
+    case S2LP::eS2lpId::eS2lp1:
+      _Mux.s2lp1Cs();
+      break;
+    case S2LP::eS2lpId::eS2lp2:
+      _Mux.s2lp2Cs();
+      break;
+     
+    default:
+      break;
+  }
+}
+
+void S2LP::csUnselect() {
+  switch (_s2lpId) {
+    case S2LP::eS2lpId::eS2lp1:
+      _Mux.s2lp1UnCs();
+      break;
+    case S2LP::eS2lpId::eS2lp2:
+      _Mux.s2lp2UnCs();
+      break;
+     
+    default:
+      break;
+  }
+}
+
 /**
 * @brief  Basic SPI function to send/receive data.
 * @param  pcHeader: pointer to header to be sent
@@ -830,13 +861,10 @@ S2LPStatus S2LP::S2LPSpiReadFifo(uint8_t cNbBytes, uint8_t* pcBuffer)
 void S2LP::SpiSendRecv(uint8_t *pcHeader, uint8_t *pcBuffer, uint16_t cNbBytes)
 {
   disableS2LPIrq();
-  //ARI :Reduced speed because bus is heavily loaded
+  //ARI :Reduced speed because bus is electricaly heavily loaded
   dev_spi->beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE0));
 
-  //digitalWrite(csn_pin, LOW);
-  // There is a multilexer on ARI v2
-
-  digitalWrite(7, 1);digitalWrite(6, 0);
+  csSelect();
 
   dev_spi->transfer(pcHeader, S2LP_CMD_SIZE);
 
@@ -845,12 +873,7 @@ void S2LP::SpiSendRecv(uint8_t *pcHeader, uint8_t *pcBuffer, uint16_t cNbBytes)
     dev_spi->transfer(pcBuffer, cNbBytes);
   }
 
-  //digitalWrite(csn_pin, HIGH);
-  // There is a multilexer on ARI v2
-  //digitalWrite(6, 1);digitalWrite(7, 1); 
-   const uint32_t MUX_IOPIN_MASK = 0x00300000; // 1<<6 | 1 << 7;
-  // change both CS at the same time
-  PORT->Group[0].OUTSET.reg = MUX_IOPIN_MASK;     // Switch the output to 0 or LOW
+  csUnselect();
 
   enableS2LPIrq();
 }
