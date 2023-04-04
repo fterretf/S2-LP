@@ -67,6 +67,7 @@
 #define IS_RSSI_DBM(VAL)              ((VAL>=-146) && (VAL<=-2))
 #define IS_RSSI_FLT(VAL)              (VAL<=15)
 #define IS_PQI_LVL_CHECK(VAL)         (VAL<=15)
+#define IS_SQI_LVL_CHECK(VAL)         (VAL<=7)
 #define S2LPRadioRegToRssidBm(VAL)    (VAL - 146)
 #define S2LPRadioRssidBmToReg(VAL)    (uint8_t)(VAL+146)
 
@@ -252,7 +253,22 @@ void S2LP::S2LPRadioSetPqiCheck(uint8_t cPqiLevel)
   tmp &= ~PQI_TH_REGMASK;
   tmp |= (((uint8_t)cPqiLevel)<<1);
   S2LPSpiWriteRegisters(QI_ADDR, 1, &tmp);
+}
 
+/**
+* @brief  Set the SQI check.
+* @param  SQI_LEVEL.
+* @retval None.
+*/
+void S2LP::S2LPRadioSetSqiCheck(uint8_t cSqiLevel)
+{
+  uint8_t tmp;
+  s_assert_param(IS_SQI_LVL_CHECK(cSqiLevel));
+
+  S2LPSpiReadRegisters(QI_ADDR, 1, &tmp);
+  tmp &= ~SQI_TH_REGMASK;
+  tmp |= (((uint8_t)cSqiLevel)<<1);
+  S2LPSpiWriteRegisters(QI_ADDR, 1, &tmp);
 }
 
 

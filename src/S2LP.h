@@ -109,7 +109,8 @@ class S2LP
   };   
   public:
    	S2LP(eS2lpId s2lpId);
-	  void beginAri(uint32_t lFrequencyBase, uint32_t ldataRate, uint32_t lfreqDeviation, uint32_t lBandwidth, uint8_t lPreambleLenBit, uint8_t lPreambleType, uint8_t lSyncLenBit, uint32_t lSyncWord, int lRssiThreshdBm );
+	  void beginAri(uint32_t lFrequencyBase, uint32_t ldataRate, uint32_t lfreqDeviation, uint32_t lBandwidth, 
+                  uint8_t lPreambleLenBit, uint8_t lPreambleType, uint8_t lSyncLenBit, uint32_t lSyncWord, int lRssiThreshdBm, int packetLen);
     void end(void);
     void attachS2LPReceive(S2LPEventHandler func);
     uint8_t send(uint8_t *payload, uint8_t payload_len, uint8_t dest_addr, bool use_csma_ca = true);
@@ -267,6 +268,7 @@ class S2LP
     void S2LPRadioGetRssiInfo(SRssiInit* xSRssiInit);
     void S2LPRadioAntennaSwitching(SFunctionalState xAntennaSwitch);
     void S2LPRadioSetPqiCheck(uint8_t cPqiLevel);
+    void S2LPRadioSetSqiCheck(uint8_t cSqiLevel);
     SFlagStatus S2LPQiGetCs(void);
     uint8_t S2LPRadioInit(SRadioInit* pxSRadioInitStruct);
     void S2LPRadioGetInfo(SRadioInit* pxSRadioInitStruct);

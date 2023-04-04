@@ -137,7 +137,8 @@ S2LP::S2LP(eS2lpId s2lpId):
 //	dev_spi = (SPIClass*)spiNew;
 //	csn_pin = cs;
 //}
-void S2LP::beginAri(uint32_t lFrequencyBase, uint32_t ldataRate, uint32_t lfreqDeviation, uint32_t lBandwidth, uint8_t lPreambleLenBit, uint8_t lPreambleType, uint8_t lSyncLenBit, uint32_t lSyncWord, int lRssiThreshdBm )
+void S2LP::beginAri(uint32_t lFrequencyBase, uint32_t ldataRate, uint32_t lfreqDeviation, uint32_t lBandwidth, 
+                    uint8_t lPreambleLenBit, uint8_t lPreambleType, uint8_t lSyncLenBit, uint32_t lSyncWord, int lRssiThreshdBm, int packetLen)
 {
 	uint8_t tmp = 0x00;
 	//Reset uses PCA, so it is handled outside of this lib
@@ -145,8 +146,8 @@ void S2LP::beginAri(uint32_t lFrequencyBase, uint32_t ldataRate, uint32_t lfreqD
 
   /* S2-LP soft reset */
   S2LPCmdStrobeSres();
-  
-  delay(10);
+
+  delay(10); 
 
   SRadioInit xRadioInit = {
     lFrequencyBase, /* base carrier frequency */
@@ -230,7 +231,7 @@ void S2LP::beginAri(uint32_t lFrequencyBase, uint32_t ldataRate, uint32_t lfreqD
   S2LPRadioRssiInit(&xSRssiInit);
   Serial.print("Setting Rssi Threshold dBm ");Serial.println(lRssiThreshdBm);
 
-  S2LPManagementRcoCalibration();
+  S2LPManagementRcoCalibration();  //TODO LOOP 10 time untill success??? cannot find S2LPManagementRcoCalibration in Arduino project
 
   /* disable CSMA and its filtering*/
   tmp = 0x00;
@@ -272,6 +273,17 @@ void S2LP::beginAri(uint32_t lFrequencyBase, uint32_t ldataRate, uint32_t lfreqD
 	  tmp = (tmp&0xFC) | (lPreambleType&0x03);
 	  S2LPSpiWriteRegisters(0x2E, 1, &tmp );
 	  Serial.print("Setting preamble ");Serial.println(tmp);
+  }
+
+  if( packetLen > 0 ){
+    Serial.print("Setting FIXED packet length ");Serial.println(packetLen);
+	  S2LPSpiReadRegisters(0x2F, 1, &tmp );
+	  tmp = tmp & 0xFE;
+    S2LPSpiWriteRegisters(0x2F, 1, &tmp ); // Fixed packet len
+    tmp = 0;
+    S2LPSpiWriteRegisters(0x31, 1, &tmp );
+    tmp = packetLen;
+    S2LPSpiWriteRegisters(0x32, 1, &tmp );
   }
 
   /* Go to RX state */
