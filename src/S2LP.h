@@ -361,7 +361,8 @@ class S2LP
     void S2LPTimerGetWakeUpTimer(float* pfWakeUpMsec, uint8_t* pcCounter , uint8_t* pcPrescaler, uint8_t* pcMulti);
     void S2LPTimerGetWakeUpTimerReload(float* pfWakeUpReloadMsec, uint8_t* pcCounter, uint8_t* pcPrescaler, uint8_t* pcMulti);
     void S2LPTimerComputeWakeUpValues(float fDesiredMsec , uint8_t* pcCounter , uint8_t* pcPrescaler);
-
+    void S2LPDumpConfig();
+    
      SPIClass *dev_spi;
 	   int csn_pin;
      int sdn_pin;
@@ -394,3 +395,4 @@ class S2LP
 };
 
 #endif /* __S2LP_H__ */
+ 

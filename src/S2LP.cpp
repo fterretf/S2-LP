@@ -929,3 +929,18 @@ void S2LP::S2LPManagementRcoCalibration(void)
   S2LPSpiWriteRegisters(0x6D, 1, &tmp2);
   SerialUSB.print("S2LP VCO Calibration Done");
 }
+
+void S2LP::S2LPDumpConfig() {
+  uint8_t c;
+  if (1) {
+    for (uint8_t i = 0; i < 0xFF; i++) {
+      S2LPSpiReadRegisters(i,1,&c);
+      if (i < 16) { SerialUSB.print("0"); }
+      SerialUSB.print(i,HEX);
+      if (c < 16) { SerialUSB.print("0"); }
+      SerialUSB.print(c,HEX);
+      SerialUSB.print(",");
+    }
+    SerialUSB.println();
+  }
+}

@@ -219,7 +219,7 @@ typedef enum
   #define s_assert_param(expr) ((expr) ? (void)0 : s_assert_failed((uint8_t *)__FILE__, __LINE__,#expr))
   void s_assert_failed(uint8_t* file, uint32_t line, char* expression);
 #else
-  #define s_assert_param(expr)        {}
+  #define s_assert_param(expr)        {if (!expr) while(1);}
 #endif
 
 /**
