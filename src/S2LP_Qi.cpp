@@ -267,7 +267,8 @@ void S2LP::S2LPRadioSetSqiCheck(uint8_t cSqiLevel)
 
   S2LPSpiReadRegisters(QI_ADDR, 1, &tmp);
   tmp &= ~SQI_TH_REGMASK;
-  tmp |= (((uint8_t)cSqiLevel)<<1);
+  tmp |= (((uint8_t)cSqiLevel)<<5);
+  tmp |= 1; //enable SQI check
   S2LPSpiWriteRegisters(QI_ADDR, 1, &tmp);
 }
 
