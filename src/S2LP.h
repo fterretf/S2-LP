@@ -106,11 +106,23 @@ class S2LP
     eS2lp1 = 0,
     eS2lp2,
     eS2lpNb,
-  };   
+  };  
+
   public:
-   	S2LP(eS2lpId s2lpId);
-	  void beginAri(uint32_t lFrequencyBase, uint32_t ldataRate, uint32_t lfreqDeviation, uint32_t lBandwidth, 
-                  uint8_t lPreambleLenBit, uint8_t lPreambleType, uint8_t lSyncLenBit, uint32_t lSyncWord, int lRssiThreshdBm, int packetLen);
+    S2LP(eS2lpId s2lpId, SPIClass *spi=&SPI, int csn=-1, int sdn=-1, int irqn=-1, 
+      uint32_t frequency=433880000, uint32_t xtalFrequency=50000000, 
+      PAInfo_t paInfo={.paRfRangeExtender=RANGE_EXT_NONE,
+      .paSignalCSD_S2LP={S2LP_GPIO_0, S2LP_GPIO_MODE_DIGITAL_OUTPUT_LP, S2LP_GPIO_DIG_OUT_TX_RX_MODE},
+      .paSignalCPS_S2LP={S2LP_GPIO_1, S2LP_GPIO_MODE_DIGITAL_OUTPUT_LP, S2LP_GPIO_DIG_OUT_RX_STATE},
+      .paSignalCTX_S2LP={S2LP_GPIO_2, S2LP_GPIO_MODE_DIGITAL_OUTPUT_LP, S2LP_GPIO_DIG_OUT_TX_STATE},
+      .paSignalCSD_MCU=A0, .paSignalCPS_MCU=A2, .paSignalCTX_MCU=A3, .paLevelValue=0x25},
+      S2LPGpioPin irq_gpio=S2LP_GPIO_3, uint8_t my_addr=0x44, uint8_t multicast_addr=0xEE,
+      uint8_t broadcast_addr=0xFF);
+
+    void begin(uint32_t frequencyBase, uint32_t dataRate, uint32_t freqDeviation, uint32_t bandwidth, 
+                 uint8_t preambleLenBit, uint8_t preambleType, 
+                 uint8_t syncLenBit, uint32_t syncWord, 
+                 int rssiThreshdBm);
     void end(void);
     void attachS2LPReceive(S2LPEventHandler func);
     uint8_t send(uint8_t *payload, uint8_t payload_len, uint8_t dest_addr, bool use_csma_ca = true);
@@ -268,7 +280,7 @@ class S2LP
     void S2LPRadioGetRssiInfo(SRssiInit* xSRssiInit);
     void S2LPRadioAntennaSwitching(SFunctionalState xAntennaSwitch);
     void S2LPRadioSetPqiCheck(uint8_t cPqiLevel);
-    void S2LPRadioSetSqiCheck(uint8_t cSqiLevel);
+    void S2LPRadioSetSqiCheck(uint8_t cSqiLevel);    
     SFlagStatus S2LPQiGetCs(void);
     uint8_t S2LPRadioInit(SRadioInit* pxSRadioInitStruct);
     void S2LPRadioGetInfo(SRadioInit* pxSRadioInitStruct);
@@ -361,38 +373,34 @@ class S2LP
     void S2LPTimerGetWakeUpTimer(float* pfWakeUpMsec, uint8_t* pcCounter , uint8_t* pcPrescaler, uint8_t* pcMulti);
     void S2LPTimerGetWakeUpTimerReload(float* pfWakeUpReloadMsec, uint8_t* pcCounter, uint8_t* pcPrescaler, uint8_t* pcMulti);
     void S2LPTimerComputeWakeUpValues(float fDesiredMsec , uint8_t* pcCounter , uint8_t* pcPrescaler);
-    void S2LPDumpConfig();
-    
-     SPIClass *dev_spi;
-	   int csn_pin;
-     int sdn_pin;
-     int irq_pin;
-     uint32_t lFrequencyBase;
-     uint32_t s_lXtalFrequency;
-     PAInfo_t s_paInfo;
-     S2LPGpioPin irq_gpio_selected;
-     uint8_t my_address;
-     uint8_t multicast_address;
-     uint8_t broadcast_address;
-     S2LPStatus g_xStatus;
-     WMbusSubmode s_cWMbusSubmode;
-     S2LPEventHandler current_event_callback;
-     S2LPEventHandler irq_handler;
-     int nr_of_irq_disabled;
-     volatile SFlagStatus xTxDoneFlag;
-     uint8_t vectcRxBuff[FIFO_SIZE];
-     uint8_t vectcTxBuff[FIFO_SIZE];
-     uint8_t cRxData;
-     volatile bool is_waiting_for_read;
-	   uint8_t lastestRssi;
-     bool is_bypass_enabled;
+
+    SPIClass *dev_spi;
+    int csn_pin;
+    int sdn_pin;
+    int irq_pin;
+    uint32_t lFrequencyBase;
+    uint32_t s_lXtalFrequency;
+    PAInfo_t s_paInfo;
+    S2LPGpioPin irq_gpio_selected;
+    uint8_t my_address;
+    uint8_t multicast_address;
+    uint8_t broadcast_address;
+    S2LPStatus g_xStatus;
+    WMbusSubmode s_cWMbusSubmode;
+    S2LPEventHandler current_event_callback;
+    S2LPEventHandler irq_handler;
+    int nr_of_irq_disabled;
+    volatile SFlagStatus xTxDoneFlag;
+    uint8_t vectcRxBuff[FIFO_SIZE];
+    uint8_t vectcTxBuff[FIFO_SIZE];
+    uint8_t cRxData;
+    volatile bool is_waiting_for_read;
+    bool is_bypass_enabled;
 
    private:
      void csSelect();
      void csUnselect();  
-     eS2lpId _s2lpId;
-
+     eS2lpId _s2lpId;    
 };
 
 #endif /* __S2LP_H__ */
- 
