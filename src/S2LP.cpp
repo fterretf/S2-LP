@@ -111,7 +111,8 @@ S2LP::S2LP(eS2lpId s2lpId, SPIClass *spi, int csn, int sdn, int irqn,
 void S2LP::begin(uint32_t frequencyBase, uint32_t dataRate, uint32_t freqDeviation, uint32_t bandwidth, 
                  uint8_t preambleLenBit, uint8_t preambleType, 
                  uint8_t syncLenBit, uint32_t syncWord, 
-                 int rssiThreshdBm)
+                 int rssiThreshdBm,
+                 ModulationSelect modulation)
 {
   pinMode(sdn_pin, OUTPUT);
 
@@ -134,7 +135,7 @@ void S2LP::begin(uint32_t frequencyBase, uint32_t dataRate, uint32_t freqDeviati
 
   SRadioInit xRadioInit = {
     lFrequencyBase, /* base carrier frequency */
-    MOD_2FSK,       /* modulation type */
+    modulation,       /* modulation type */
     dataRate,       /* data rate */
     freqDeviation,  /* frequency deviation */
     bandwidth       /* bandwidth */

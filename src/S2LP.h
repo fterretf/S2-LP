@@ -122,7 +122,8 @@ class S2LP
     void begin(uint32_t frequencyBase, uint32_t dataRate, uint32_t freqDeviation, uint32_t bandwidth, 
                  uint8_t preambleLenBit, uint8_t preambleType, 
                  uint8_t syncLenBit, uint32_t syncWord, 
-                 int rssiThreshdBm);
+                 int rssiThreshdBm,
+                 ModulationSelect modulation);
     void end(void);
     void attachS2LPReceive(S2LPEventHandler func);
     uint8_t send(uint8_t *payload, uint8_t payload_len, uint8_t dest_addr, bool use_csma_ca = true);
