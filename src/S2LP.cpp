@@ -132,9 +132,10 @@ void S2LP::begin(uint32_t frequencyBase, uint32_t dataRate, uint32_t freqDeviati
   // };
 
   // S2LPGpioInit(&xGpioIRQ);
-
+  
+  lFrequencyBase = frequencyBase; 
   SRadioInit xRadioInit = {
-    lFrequencyBase, /* base carrier frequency */
+    frequencyBase, /* base carrier frequency */
     modulation,       /* modulation type */
     dataRate,       /* data rate */
     freqDeviation,  /* frequency deviation */
