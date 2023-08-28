@@ -114,14 +114,16 @@ void S2LP::begin(uint32_t frequencyBase, uint32_t dataRate, uint32_t freqDeviati
                  int rssiThreshdBm,
                  ModulationSelect modulation)
 {
-  pinMode(sdn_pin, OUTPUT);
+  if (sdn_pin !=-1){
+    pinMode(sdn_pin, OUTPUT);
+    /* Shutdown the S2-LP */
+    digitalWrite(sdn_pin, HIGH);
+    delay(1);
+    digitalWrite(sdn_pin, LOW);
+    delay(1);
+  }
 
-  /* Shutdown the S2-LP */
-  digitalWrite(sdn_pin, HIGH);
-  delay(1);
-  digitalWrite(sdn_pin, LOW);
-  delay(1);
-
+  
   /* S2-LP soft reset */
   S2LPCmdStrobeSres();
 
@@ -248,7 +250,9 @@ void S2LP::begin(uint32_t frequencyBase, uint32_t dataRate, uint32_t freqDeviati
   /* Go to RX state */
   S2LPCmdStrobeCommand(CMD_RX);
 
-  attachInterrupt(irq_pin, irq_handler, FALLING);
+  if (irq_pin!=-1){
+    attachInterrupt(irq_pin, irq_handler, FALLING);
+  }
 }
 
 /**
@@ -259,22 +263,30 @@ void S2LP::begin(uint32_t frequencyBase, uint32_t dataRate, uint32_t freqDeviati
 void S2LP::end(void)
 {
   /* Shutdown the S2-LP */
-  digitalWrite(sdn_pin, HIGH);
-  delay(1);
-  digitalWrite(sdn_pin, LOW);
-  delay(1);
+  if (sdn_pin!=-1){
+    digitalWrite(sdn_pin, HIGH);
+    delay(1);
+    digitalWrite(sdn_pin, LOW);
+    delay(1);
+  }
 
   /* S2-LP soft reset */
   S2LPCmdStrobeSres();
 
   /* Detach S2-LP IRQ */
-  detachInterrupt(irq_pin);
+  if (irq_pin!=-1){
+    detachInterrupt(irq_pin);
+  }
 
   /* Reset CSN pin */
-  pinMode(csn_pin, INPUT);
+  if (csn_pin!=-1){
+    pinMode(csn_pin, INPUT);
+  }
 
   /* Reset SDN pin */
-  pinMode(sdn_pin, INPUT);
+  if (sdn_pin!=-1){
+    pinMode(sdn_pin, INPUT);
+  }
 
   /* Reset CSD, CPS and CTX if it is needed */
   if(s_paInfo.paRfRangeExtender == RANGE_EXT_SKYWORKS_SKY66420)
@@ -590,7 +602,9 @@ void S2LP::disableS2LPIrq(void)
 {
   if(nr_of_irq_disabled == 0)
   {
-    detachInterrupt(irq_pin);
+    if (irq_pin!=-1){
+      detachInterrupt(irq_pin);
+    }
   }
   nr_of_irq_disabled++;
 }
@@ -607,7 +621,9 @@ void S2LP::enableS2LPIrq(void)
     nr_of_irq_disabled--;
     if(nr_of_irq_disabled == 0)
     {
-      attachInterrupt(irq_pin, irq_handler, FALLING);
+      if (irq_pin!=-1){
+        attachInterrupt(irq_pin, irq_handler, FALLING);
+      }
     }
   }
 }
